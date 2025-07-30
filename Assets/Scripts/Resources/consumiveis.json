@@ -1,0 +1,39 @@
+{
+  "itens": [
+    {
+      "id": 1,
+      "nome": "Caneta",
+      "limitePorFuncionario": 8
+    },
+    {
+      "id": 2,
+      "nome": "Lápis",
+      "limitePorFuncionario": 8
+    },
+    {
+      "id": 3,
+      "nome": "Borracha",
+      "limitePorFuncionario": 5
+    },
+    {
+      "id": 4,
+      "nome": "Post-it",
+      "limitePorFuncionario": 50
+    },
+    {
+      "id": 5,
+      "nome": "Pilha",
+      "limitePorFuncionario": 10
+    },
+    {
+      "id": 6,
+      "nome": "Cabo USB",
+      "limitePorFuncionario": 3
+    },
+    {
+      "id": 7,
+      "nome": "Cabo USB-C",
+      "limitePorFuncionario": 4
+    }
+  ]
+}
