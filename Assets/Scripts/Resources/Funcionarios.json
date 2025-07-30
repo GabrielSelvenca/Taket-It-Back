@@ -1,0 +1,10 @@
+{
+  "funcionarios":
+  [
+    {
+      "id": -1,
+      "nome": "Teste",
+      "func": "TI"
+    }
+  ]
+}

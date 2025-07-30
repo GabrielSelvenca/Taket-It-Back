@@ -1,0 +1,24 @@
+{
+  "ranking": [
+    {
+      "idUsuario": -1,
+      "nomeUsuario": "Exemplo",
+      "pontosTotais": 999
+    },
+    {
+      "idUsuario": -1,
+      "nomeUsuario": "Exemplo",
+      "pontosTotais": 999
+    },
+    {
+      "idUsuario": -1,
+      "nomeUsuario": "Exemplo",
+      "pontosTotais": 999
+    },
+    {
+      "idUsuario": -1,
+      "nomeUsuario": "Exemplo",
+      "pontosTotais": 999
+    }
+  ]
+}
