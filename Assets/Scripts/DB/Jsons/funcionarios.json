@@ -1,0 +1,56 @@
+{
+  {
+    "funcionarios": [
+      {
+        "id": 1,
+        "nome": "Carla Menezes",
+        "funcao": "TI"
+      },
+      {
+        "id": 2,
+        "nome": "Ricardo Torres",
+        "funcao": "TI"
+      },
+      {
+        "id": 3,
+        "nome": "Duda Vasconcelos",
+        "funcao": "Áudio"
+      },
+      {
+        "id": 4,
+        "nome": "Jeferson Santana",
+        "funcao": "Áudio"
+      },
+      {
+        "id": 5,
+        "nome": "Dona Lúcia Prado",
+        "funcao": "Limpeza"
+      },
+      {
+        "id": 6,
+        "nome": "Elias Gomes",
+        "funcao": "Limpeza"
+      },
+      {
+        "id": 7,
+        "nome": "Nara Kim",
+        "funcao": "Dev"
+      },
+      {
+        "id": 8,
+        "nome": "Bruno Alves",
+        "funcao": "Dev"
+      },
+      {
+        "id": 9,
+        "nome": "Thiago Duarte",
+        "funcao": "Marketing"
+      },
+      {
+        "id": 10,
+        "nome": "Camila Bernardes",
+        "funcao": "Marketing"
+      }
+    ]
+  }
+}
