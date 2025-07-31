@@ -60,7 +60,7 @@ namespace Assets.Scripts
                 }
             }
         }
-        
+
         public Funcionarios GetFuncionario(int id)
         {
             funcionarioPorId.TryGetValue(id, out var func);
@@ -92,8 +92,8 @@ namespace Assets.Scripts
             {
                 int qtdTipos = Random.Range(1, 8);
                 List<int> usados = new();
-                
-                for(int i = 0; i < qtdTipos; i++)
+
+                for (int i = 0; i < qtdTipos; i++)
                 {
                     Consumivel item;
                     do
@@ -119,5 +119,43 @@ namespace Assets.Scripts
 
             Debug.Log("Dados carregados ao JSON.");
         }
+
+        private Dictionary<string, List<int>> restricoesPorFuncao = new()
+        {
+            { "Limpeza", new List<int> { 9, 10 } },
+            { "TI", new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 } },
+            { "Dev", new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 } },
+            { "Marketing", new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 } }
+        };
+
+        public bool VerificarEntregasValidas(int idFuncionario)
+        {
+            var funcionario = GetFuncionario(idFuncionario);
+            if (funcionario == null)
+            {
+                Debug.LogWarning("Funcionário não encontrado.");
+                return false;
+            }
+
+            if (!restricoesPorFuncao.TryGetValue(funcionario.funcao, out var permitidos))
+            {
+                Debug.LogWarning($"Função {funcionario.funcao} não tem restrições definidas.");
+                return false;
+            }
+
+            var entregas = GetConsFunc(idFuncionario);
+            foreach (var entrega in entregas)
+            {
+                if (!permitidos.Contains(entrega.idConsumivel))
+                {
+                    var nomeItem = consumiveis.consumiveis.Find(c => c.id == entrega.idConsumivel)?.nome ?? "Desconhecido";
+                    Debug.LogWarning($"Item inválido: {nomeItem} ({entrega.idConsumivel}) entregue por {funcionario.nome} ({funcionario.funcao})");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
     }
 }
