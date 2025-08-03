@@ -1,6 +1,9 @@
 using Assets.Scripts;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+//using Unity.Mathematics;
 using UnityEngine;
 
 public class MovimentoFunc : MonoBehaviour
@@ -9,6 +12,10 @@ public class MovimentoFunc : MonoBehaviour
     public Transform pontoFrente;
     public Transform pontoFinal;
     public float velocidade = 6f;
+
+    [Header("Sound")]
+    public AudioSource blabbingAudioSource;
+    public List<AudioClip> blabs = new List<AudioClip>();
 
     private List<Transform> fila = new();
     private int indiceAtual = 0;
@@ -25,6 +32,9 @@ public class MovimentoFunc : MonoBehaviour
         {
             fila.Add(paiDaFila.GetChild(i));
         }
+
+        fila = fila.OrderBy(x => Random.value).ToList();
+
     }
 
     public void MoverManual()
@@ -37,15 +47,16 @@ public class MovimentoFunc : MonoBehaviour
 
             retanguloAtual = fila[indiceAtual];
             fila.RemoveAt(indiceAtual);
-            StartCoroutine(MoverPara(retanguloAtual, pontoFrente.position, () =>
-            {
-                estado = EstadoMovimento.IndoParaFrente;
-            }));
+
+            StartCoroutine(MoverPara(retanguloAtual, pontoFrente.position));
+            estado = EstadoMovimento.IndoParaFrente;
 
             movendo = true;
+
+            Blabbs();
         }
         else if (estado == EstadoMovimento.IndoParaFrente)
-        {
+        { 
             if (retanguloAtual == null) return;
 
             StartCoroutine(MoverPara(retanguloAtual, pontoFinal.position, () =>
@@ -57,13 +68,15 @@ public class MovimentoFunc : MonoBehaviour
 
                 retanguloAtual = null;
                 estado = EstadoMovimento.Parado;
+                
+                MoverManual();
             }));
 
             movendo = true;
         }
     }
 
-    private IEnumerator MoverPara(Transform obj, Vector3 destino, System.Action aoFinalizar)
+    private IEnumerator MoverPara(Transform obj, Vector3 destino, System.Action aoFinalizar = null)
     {
         obj.gameObject.SetActive(true);
         while (Vector3.Distance(obj.position, destino) > 0.05f)
@@ -76,17 +89,25 @@ public class MovimentoFunc : MonoBehaviour
         movendo = false;
         GameData.Instance.BuscarModelosConsumiveisFuncionario(int.Parse(obj.gameObject.name));
 
-        aoFinalizar?.Invoke();
+        if(aoFinalizar != null)
+            aoFinalizar?.Invoke();
     }
 
     private void AndarFila()
     {
-        float distanciaZ = 1f;
-
         for (int i = 0; i < fila.Count; i++)
         {
             Vector3 pos = fila[i].position;
-            fila[i].position = new Vector3(pos.x, pos.y, pos.z + distanciaZ);
+            fila[i].position = new Vector3(pos.x, pos.y, pos.z);
         }
+    }
+
+    private void Blabbs()
+    {
+        if (blabs.Count == 0) return;
+
+        int index = Random.Range(0, blabs.Count);
+        blabbingAudioSource.clip = blabs[index];
+        blabbingAudioSource.Play();
     }
 }

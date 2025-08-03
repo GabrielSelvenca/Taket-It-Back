@@ -31,7 +31,7 @@ public class CursorInputHover : MonoBehaviour, IPointerEnterHandler, IPointerExi
         isInputField = GetComponent<TMP_InputField>() != null || GetComponentInChildren<TMP_InputField>() != null;
 
         if (isInputField)
-            Cursor.SetCursor(cursorHoverWrite, hotspot, cursorMode); //GABRIEL, ESSA LINHA NÃO ESTÁ FUNCIONANDO, USA O SEU CHAT GPT PAGO OU SEU CÉREBRO ALTAMENTE DESENVOLVIDO
+            Cursor.SetCursor(cursorHoverWrite, hotspot, cursorMode);
         else
             Cursor.SetCursor(cursorHoverClick, hotspot, cursorMode);
     }

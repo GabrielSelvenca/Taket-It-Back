@@ -24,6 +24,8 @@ public class RaycastInteractor : MonoBehaviour
 
     private GameObject funcionarioAtual = null;
 
+    private GameObject Tablet;
+
     private void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
@@ -56,6 +58,7 @@ public class RaycastInteractor : MonoBehaviour
             else if (hit.collider.CompareTag("Tablet"))
             {
                 Enable(hit);
+                Tablet = hit.collider.gameObject;
                 action = ShowTablet;
             }
             else if (hit.collider.CompareTag("Aprovar"))
@@ -80,20 +83,47 @@ public class RaycastInteractor : MonoBehaviour
     {
         if (funcionarioAtual != null)
         {
-            funcionarioAtual.tag = null;
+            funcionarioAtual.GetComponent<BoxCollider>().enabled = false;
 
             cIA.StartIdOpenAnim(int.Parse(funcionarioAtual.name));
         }
     }
 
+    public void CloseId()
+    {
+        if (funcionarioAtual != null)
+        {
+            cIA.StartIdCloseAnim();
+
+            funcionarioAtual.GetComponent<BoxCollider>().enabled = true;
+        }
+    }
+
     void ShowTablet()
     {
-        cIA.StartTabletOpenAnim();
+        if (Tablet != null)
+        {
+            cIA.StartTabletOpenAnim();
+            Tablet.GetComponent<BoxCollider>().enabled = false;
+
+        }
+    }
+
+    public void HideTablet()
+    {
+        if (Tablet != null)
+        {
+            cIA.StartTabletCloseAnim();
+            Tablet.GetComponent<BoxCollider>().enabled = true;
+
+        }
     }
 
     private void Aprovado()
     {
         movimentoFunc.MoverManual();
+
+        Debug.Log("Aprovado");
 
         // Aqui fica a lógica dos pontos e o que mais precisar
     }
@@ -102,6 +132,7 @@ public class RaycastInteractor : MonoBehaviour
     {
         movimentoFunc.MoverManual();
 
+        Debug.Log("Reprovado");
         // Aqui fica a lógica dos pontos e o que mais precisar
     }
 
