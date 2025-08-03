@@ -7,4 +7,7 @@ public class Consumivel
     public string nome;
     public bool ehGrande;
     public int qtd;
+
+    [System.NonSerialized]
+    public GameObject modelo3D;
 }

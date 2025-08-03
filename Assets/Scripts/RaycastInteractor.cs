@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class RaycastInteractor : MonoBehaviour
@@ -25,6 +26,10 @@ public class RaycastInteractor : MonoBehaviour
     private GameObject funcionarioAtual = null;
 
     private GameObject Tablet;
+
+    public AudioSource audioSource;
+
+    public List<AudioClip> buttonSounds = new();
 
     private void Start()
     {
@@ -122,7 +127,7 @@ public class RaycastInteractor : MonoBehaviour
     private void Aprovado()
     {
         movimentoFunc.MoverManual();
-
+        audioSource.Play();
         Debug.Log("Aprovado");
 
         // Aqui fica a lógica dos pontos e o que mais precisar
@@ -131,8 +136,9 @@ public class RaycastInteractor : MonoBehaviour
     private void Reprovado()
     {
         movimentoFunc.MoverManual();
-
+        audioSource.Play();
         Debug.Log("Reprovado");
+
         // Aqui fica a lógica dos pontos e o que mais precisar
     }
 

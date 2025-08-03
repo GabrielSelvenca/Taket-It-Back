@@ -1,9 +1,8 @@
 using Assets.Scripts;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-//using Unity.Mathematics;
+using TMPro;
 using UnityEngine;
 
 public class MovimentoFunc : MonoBehaviour
@@ -16,11 +15,14 @@ public class MovimentoFunc : MonoBehaviour
     [Header("Sound")]
     public AudioSource blabbingAudioSource;
     public List<AudioClip> blabs = new List<AudioClip>();
+    private bool tocando = false;
 
     private List<Transform> fila = new();
     private int indiceAtual = 0;
     private bool movendo = false;
     private Transform retanguloAtual = null;
+
+    public GameData gameData;
 
     private enum EstadoMovimento { Parado, IndoParaFrente, IndoParaFinal }
     private EstadoMovimento estado = EstadoMovimento.Parado;
@@ -34,7 +36,6 @@ public class MovimentoFunc : MonoBehaviour
         }
 
         fila = fila.OrderBy(x => Random.value).ToList();
-
     }
 
     public void MoverManual()
@@ -43,17 +44,18 @@ public class MovimentoFunc : MonoBehaviour
 
         if (estado == EstadoMovimento.Parado)
         {
-            if (fila.Count == 0) return;
+            movendo = true;
 
+            if (fila.Count == 0) return;
+            
             retanguloAtual = fila[indiceAtual];
             fila.RemoveAt(indiceAtual);
 
             StartCoroutine(MoverPara(retanguloAtual, pontoFrente.position));
             estado = EstadoMovimento.IndoParaFrente;
 
-            movendo = true;
+            movendo = false;
 
-            Blabbs();
         }
         else if (estado == EstadoMovimento.IndoParaFrente)
         { 
@@ -73,6 +75,11 @@ public class MovimentoFunc : MonoBehaviour
             }));
 
             movendo = true;
+        }
+
+        if(movendo == false && estado == EstadoMovimento.IndoParaFrente)
+        {
+            Blabbs();
         }
     }
 
@@ -102,12 +109,54 @@ public class MovimentoFunc : MonoBehaviour
         }
     }
 
-    private void Blabbs()
+    public void Blabbs()
     {
-        if (blabs.Count == 0) return;
+        if (tocando || blabs.Count == 0)
+            return;
 
         int index = Random.Range(0, blabs.Count);
-        blabbingAudioSource.clip = blabs[index];
-        blabbingAudioSource.Play();
+        AudioClip escolhido = blabs[index];
+
+        Debug.Log($"Tocando: {escolhido.name} - duração: {escolhido.length}");
+
+        blabbingAudioSource.clip = escolhido;
+        StartCoroutine(EsperarChegar());
+
     }
+
+    private IEnumerator EsperarChegar()
+    {
+        yield return new WaitForSeconds(2f);
+
+        Debug.Log("Chegou");
+        blabbingAudioSource.Play(); 
+    }
+
+    //public void DroparConsumiveis(int idFuncionario)
+    //{
+    //    var modelos = gameData.BuscarModelosConsumiveisFuncionario(idFuncionario);
+    //    if (modelos == null || modelos.Count == 0)
+    //    {
+    //        Debug.LogWarning("Nenhum consumível encontrado para este funcionário.");
+    //        return;
+    //    }
+
+    //    float offset = 0f;
+    //    float distanciaEntreItens = 1.0f;
+
+    //    foreach (var modelo in modelos)
+    //    {
+    //        for (int i = 0; i < modelo.quantidade; i++)
+    //        {
+    //            // Pega um modelo aleatório do grupo
+    //            GameObject prefab = modelo.modelos[UnityEngine.Random.Range(0, modelo.modelos.Count)];
+    //            GameObject instancia = Instantiate(prefab);
+
+    //            instancia.transform.position = gameData.DropItemsArea.position + new Vector3(offset, 0, 0);
+    //            offset += distanciaEntreItens;
+
+    //            instancia.name = $"{modelo.nomeConsumivel}_{i + 1}";
+    //        }
+    //    }
+    //}
 }

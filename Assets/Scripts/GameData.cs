@@ -20,6 +20,8 @@ namespace Assets.Scripts
 
         public GameObject listaConsumiveisModels;
 
+        public Transform DropItemsArea;
+
         private Dictionary<int, Funcionarios> funcionarioPorId = new();
 
         [HideInInspector]
@@ -79,13 +81,12 @@ namespace Assets.Scripts
                 {
                     new Consumivel { id = 1, nome = "Pilha", ehGrande = false },
                     new Consumivel { id = 2, nome = "Borracha", ehGrande = false },
-                    new Consumivel { id = 3, nome = "Cabos", ehGrande = true },
-                    new Consumivel { id = 4, nome = "Caneta", ehGrande = false },
-                    new Consumivel { id = 5, nome = "Grampeador", ehGrande = true },
-                    new Consumivel { id = 6, nome = "Lápis", ehGrande = false },
-                    new Consumivel { id = 7, nome = "Mouse", ehGrande = true },
-                    new Consumivel { id = 8, nome = "Teclados", ehGrande = true },
-                    new Consumivel { id = 9, nome = "Cálculadora", ehGrande = true }
+                    new Consumivel { id = 3, nome = "Caneta", ehGrande = false },
+                    new Consumivel { id = 4, nome = "Grampeador", ehGrande = true },
+                    new Consumivel { id = 5, nome = "Lápis", ehGrande = false },
+                    new Consumivel { id = 6, nome = "Mouse", ehGrande = true },
+                    new Consumivel { id = 7, nome = "Teclados", ehGrande = true },
+                    new Consumivel { id = 8, nome = "Cálculadora", ehGrande = true }
                 }
             };
         }
@@ -147,7 +148,7 @@ namespace Assets.Scripts
 
         public List<FuncionarioConsumivel> GetConsFunc(int idFunc) => funcionariosConsumiveis.funcionarioConsumiveis.FindAll(f => f.idFuncionario == idFunc);
 
-        public int GetPOntosDoJogador(string nome) => ranking.ranking.Find(p => p.nome == nome)?.pontos ?? 0;
+        public int GetPontosDoJogador(string nome) => ranking.ranking.Find(p => p.nome == nome)?.pontos ?? 0;
 
         public void InserirRanking(string nomeJogador, int pontosGanhos)
         {
