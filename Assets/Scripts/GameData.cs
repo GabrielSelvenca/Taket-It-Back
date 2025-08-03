@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel.Design;
+﻿using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -26,68 +24,65 @@ namespace Assets.Scripts
             if (Instance == null) Instance = this;
             else { Destroy(gameObject); return; }
 
-            IniciarVinculos();
+            CarregarDados();
             GerarConsumiveis();
-            CarregarRanking();
+            IniciarVinculos();
         }
 
-        private void IniciarVinculos()
+        private void CarregarDados()
         {
-            funcionarioPorId.Clear();
-
-            foreach (var func in funcionarios.funcionarios)
+            // Ranking
+            string caminhoR = Path.Combine(Application.persistentDataPath, "ranking.json");
+            if (File.Exists(caminhoR))
             {
-                funcionarioPorId[func.id] = func;
-
-                Transform children = listaPersonagens.transform.Find(func.id.ToString());
-                if (children != null)
-                {
-                    func.personagem3D = children.gameObject;
-                    Debug.Log($"Funcionario {func.nome} vinculado ao objeto {children.name}");
-                }
-                else
-                {
-                    Debug.LogWarning($"Objeto com o nome {func.id} não encontrado");
-                }
-
-                foreach (var consumo in funcionariosConsumiveis.funcionarioConsumiveis)
-                {
-                    if (consumo.idFuncionario == func.id)
-                    {
-                        var cons = consumiveis.consumiveis.Find(c => c.id == consumo.idConsumivel);
-                        string nome = cons != null ? cons.nome : "Desconhecido";
-                        Debug.Log($"{func.nome} tem {cons.qtd} de {nome}");
-                    }
-                }
+                string json = File.ReadAllText(caminhoR);
+                ranking = JsonUtility.FromJson<ListaRanking>(json);
+                Debug.Log("Ranking carregado com sucesso.");
             }
-        }
+            else
+            {
+                ranking = new ListaRanking();
+                Debug.Log("Arquivo de ranking não encontrado. Criando novo.");
+            }
 
-        public Funcionarios GetFuncionario(int id)
-        {
-            funcionarioPorId.TryGetValue(id, out var func);
-            return func;
-        }
+            // Funcionários (manual)
+            funcionarios = new ListaFuncionarios
+            {
+                funcionarios = new List<Funcionarios>
+                {
+                    new Funcionarios { id = 14254, nome = "Carla Menezes", funcao = "TI" },
+                    new Funcionarios { id = 9572, nome = "Ricardo Torres", funcao = "TI" },
+                    new Funcionarios { id = 31774, nome = "Duda Vasconcelos", funcao = "Áudio" },
+                    new Funcionarios { id = 20892, nome = "Jeferson Santana", funcao = "Áudio" },
+                    new Funcionarios { id = 18995, nome = "Nara Kim", funcao = "Dev" },
+                    new Funcionarios { id = 15537, nome = "Bruno Alves", funcao = "Dev" },
+                    new Funcionarios { id = 44026, nome = "Thiago Duarte", funcao = "Marketing" },
+                    new Funcionarios { id = 32137, nome = "Camila Bernardes", funcao = "Marketing" },
+                }
+            };
 
-        public GameObject GetPersonagem(int id)
-        {
-            var funcionario = GetFuncionario(id);
-            return funcionario?.personagem3D;
-        }
-
-        public List<FuncionarioConsumivel> GetConsFunc(int idFunc)
-        {
-            return funcionariosConsumiveis.funcionarioConsumiveis.FindAll(f => f.idFuncionario == idFunc);
-        }
-
-        public int GetPOntosDoJogador(string nome)
-        {
-            var entry = ranking.ranking.Find(p => p.nome == nome);
-            return entry != null ? entry.pontos : 0;
+            // Consumíveis (manual)
+            consumiveis = new ListaConsumiveis
+            {
+                consumiveis = new List<Consumivel>
+                {
+                    new Consumivel { id = 1, nome = "Pilha" },
+                    new Consumivel { id = 2, nome = "Cabos" },
+                    new Consumivel { id = 3, nome = "Teclados" },
+                    new Consumivel { id = 4, nome = "Mouse" },
+                    new Consumivel { id = 5, nome = "Caneta" },
+                    new Consumivel { id = 6, nome = "Lápis" },
+                    new Consumivel { id = 7, nome = "Grampeador" },
+                    new Consumivel { id = 8, nome = "Borracha" },
+                    new Consumivel { id = 9, nome = "Álcool Isopropílico" },
+                    new Consumivel { id = 10, nome = "Flanela" },
+                }
+            };
         }
 
         public void GerarConsumiveis()
         {
-            funcionariosConsumiveis.funcionarioConsumiveis.Clear();
+            funcionariosConsumiveis = new ListaFuncionariosConsumiveis { funcionarioConsumiveis = new List<FuncionarioConsumivel>() };
 
             foreach (var func in funcionarios.funcionarios)
             {
@@ -121,12 +116,62 @@ namespace Assets.Scripts
             Debug.Log("Dados carregados ao JSON.");
         }
 
+        private void IniciarVinculos()
+        {
+            funcionarioPorId.Clear();
+
+            foreach (var func in funcionarios.funcionarios)
+            {
+                funcionarioPorId[func.id] = func;
+
+                Transform child = listaPersonagens.transform.Find(func.id.ToString());
+                if (child != null)
+                {
+                    func.personagem3D = child.gameObject;
+                    Debug.Log($"Funcionario {func.nome} vinculado ao objeto {child.name}");
+                }
+                else
+                {
+                    Debug.LogWarning($"Objeto com nome {func.id} não encontrado");
+                }
+            }
+        }
+
+        public Funcionarios GetFuncionario(int id) => funcionarioPorId.TryGetValue(id, out var func) ? func : null;
+
+        public GameObject GetPersonagem(int id) => GetFuncionario(id)?.personagem3D;
+
+        public List<FuncionarioConsumivel> GetConsFunc(int idFunc) => funcionariosConsumiveis.funcionarioConsumiveis.FindAll(f => f.idFuncionario == idFunc);
+
+        public int GetPOntosDoJogador(string nome) => ranking.ranking.Find(p => p.nome == nome)?.pontos ?? 0;
+
+        public void InserirRanking(string nomeJogador, int pontosGanhos)
+        {
+            var jogador = ranking.ranking.Find(j => j.nome == nomeJogador);
+
+            if (jogador != null)
+            {
+                jogador.pontos += pontosGanhos;
+                Debug.Log($"Jogador {jogador.nome} atualizado com +{pontosGanhos} pontos (Total: {jogador.pontos})");
+            }
+            else
+            {
+                ranking.ranking.Add(new PlayerRank { nome = nomeJogador, pontos = pontosGanhos });
+                Debug.Log($"Jogador {nomeJogador} adicionado com {pontosGanhos} pontos.");
+            }
+
+            string caminho = Path.Combine(Application.persistentDataPath, "ranking.json");
+            File.WriteAllText(caminho, JsonUtility.ToJson(ranking, true));
+            Debug.Log($"Ranking salvo em {caminho}");
+        }
+
         private Dictionary<string, List<int>> restricoesPorFuncao = new()
         {
             { "Limpeza", new List<int> { 9, 10 } },
             { "TI", new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 } },
             { "Dev", new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 } },
-            { "Marketing", new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 } }
+            { "Marketing", new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 } },
+            { "Áudio", new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 } }
         };
 
         public bool VerificarEntregasValidas(int idFuncionario)
@@ -157,55 +202,5 @@ namespace Assets.Scripts
 
             return true;
         }
-
-        //Tentei fazer um jeito de adicionar informações no ranking
-        public void InserirRanking(string nomeJogador, int pontosGanhos)
-        {
-            var jogador = ranking.ranking.Find(j => j.nome == nomeJogador);
-
-            if (jogador != null)
-            {
-                jogador.pontos += pontosGanhos;
-                Debug.Log($"Jogador {jogador.nome} atualizado com +{pontosGanhos} pontos (Total: {jogador.pontos})");
-            }
-            else
-            {
-                ranking.ranking.Add(new PlayerRank
-                {
-                    nome = nomeJogador,
-                    pontos = pontosGanhos
-                });
-                Debug.Log($"Jogador {nomeJogador} adicionado com {pontosGanhos} pontos.");
-            }
-
-            SalvarRanking();
-        }
-
-        private void SalvarRanking()
-        {
-            string caminho = Path.Combine(Application.persistentDataPath, "ranking.json");
-            string jsonFinal = JsonUtility.ToJson(ranking, true);
-            File.WriteAllText(caminho, jsonFinal);
-            Debug.Log($"Ranking salvo em {caminho}");
-        }
-
-        private void CarregarRanking()
-        {
-            string caminho = Path.Combine(Application.persistentDataPath, "ranking.json");
-            if (File.Exists(caminho))
-            {
-                string json = File.ReadAllText(caminho);
-                ranking = JsonUtility.FromJson<ListaRanking>(json);
-                Debug.Log("Ranking carregado com sucesso.");
-            }
-            else
-            {
-                ranking = new ListaRanking();
-                Debug.Log("Arquivo de ranking não encontrado. Criando novo.");
-            }
-        }
-
-
-
     }
 }

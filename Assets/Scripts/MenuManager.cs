@@ -18,8 +18,11 @@ public class MenuManager : MonoBehaviour
     public TMP_InputField InputName;
     public GameData gameData;
 
-    [Header("Player")] //Perdão pela gambiarra ;-;
+    [Header("Player")] //Perdão pela gambiarra ;-; ---- love u <3
     public GameObject Player;
+
+    [Header("Configs")]
+    public MovimentoFunc movimentoFunc;
 
     private void Awake()
     {
@@ -48,7 +51,13 @@ public class MenuManager : MonoBehaviour
     {
         string nomeJogador = InputName.text.Trim();
 
-        if (nomeJogador != null)
+        //if (nomeJogador != null) 
+
+        // nomeJodador != null sempre vai ser true
+        // pq mesmo que seja nomeJogador = "" ela não é null,
+        // pra string sempre use string.IsNullOrEmpty() ou string.IsNullOrWhiteSpace()
+
+        if (string.IsNullOrWhiteSpace(nomeJogador))
         {
             gameData.InserirRanking(nomeJogador, 0);
             Debug.Log($"O nome do jogador é {nomeJogador}");
@@ -99,6 +108,8 @@ public class MenuManager : MonoBehaviour
         painelFade.color = corFinal;
         canvasMenu.gameObject.SetActive(false);
         Player.gameObject.SetActive(true);
+
+        movimentoFunc.MoverManual();
     }
 
     public void Tutorial()
