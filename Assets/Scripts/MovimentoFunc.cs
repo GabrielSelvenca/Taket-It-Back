@@ -1,3 +1,4 @@
+using Assets.Scripts;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -64,6 +65,7 @@ public class MovimentoFunc : MonoBehaviour
 
     private IEnumerator MoverPara(Transform obj, Vector3 destino, System.Action aoFinalizar)
     {
+        obj.gameObject.SetActive(true);
         while (Vector3.Distance(obj.position, destino) > 0.05f)
         {
             obj.position = Vector3.MoveTowards(obj.position, destino, velocidade * Time.deltaTime);
@@ -72,6 +74,7 @@ public class MovimentoFunc : MonoBehaviour
 
         obj.position = destino;
         movendo = false;
+        GameData.Instance.BuscarModelosConsumiveisFuncionario(int.Parse(obj.gameObject.name));
 
         aoFinalizar?.Invoke();
     }

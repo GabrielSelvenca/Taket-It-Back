@@ -1,4 +1,6 @@
+using Assets.Scripts;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 
 public class UiAnim : MonoBehaviour
@@ -13,10 +15,23 @@ public class UiAnim : MonoBehaviour
     public RectTransform tabletRectTransform;
     public GameObject tabletModel;
 
+    public TextMeshProUGUI crachaId;
+    public TextMeshProUGUI crachaNome;
+    public TextMeshProUGUI crachaFuncao;
+
     //ID ANIM START
 
-    public void StartIdOpenAnim()
+    public void StartIdOpenAnim(int idFunc)
     {
+        var func = GameData.Instance.GetFuncionario(idFunc);
+
+        if (func != null)
+        {
+            crachaFuncao.text = func.funcao;
+            crachaId.text = func.id.ToString();
+            crachaNome.text = func.nome;
+        }
+
         if (anim != null) { anim = null; }
 
         anim = StartCoroutine(IdAnimOpening());
@@ -83,7 +98,6 @@ public class UiAnim : MonoBehaviour
         {
             tabletRectTransform.position = tabletRectTransform.position + new Vector3(0, 4f, 0);
             tabletForY++;
-            Debug.Log("oioioioi");
             yield return new WaitForSeconds(0.001f);
         }
         for (int i = 0; i < 40; i++)

@@ -5,6 +5,6 @@ public class Consumivel
 {
     public int id;
     public string nome;
-    public int preco;
+    public bool ehGrande;
     public int qtd;
 }

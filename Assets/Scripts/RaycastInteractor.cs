@@ -14,11 +14,15 @@ public class RaycastInteractor : MonoBehaviour
 
     public int actualEmplo;
 
+    public MovimentoFunc movimentoFunc;
+
     Outline outline;
 
     float range = 100f;
 
     bool aberto;
+
+    private GameObject funcionarioAtual = null;
 
     private void Start()
     {
@@ -46,6 +50,7 @@ public class RaycastInteractor : MonoBehaviour
             if (hit.collider.CompareTag("Empregado"))
             {
                 Enable(hit);
+                funcionarioAtual = hit.collider.gameObject;
                 action = ShowId;
             }
             else if (hit.collider.CompareTag("Tablet"))
@@ -55,13 +60,13 @@ public class RaycastInteractor : MonoBehaviour
             }
             else if (hit.collider.CompareTag("Aprovar"))
             {
-                Aprovar(hit);
-                // Lógica de aprovar aqui ou (melhor) chamar função da lógica
+                EnableA(hit);
+                action = Aprovado;
             }
             else if (hit.collider.CompareTag("Reprovar"))
             {
-                Reprovar(hit);
-                // Lógica de reprovar aqui ou (melhor) chamar função da lógica
+                EnableR(hit);
+                action = Reprovado;
             }
         }
         else if (aberto)
@@ -73,12 +78,29 @@ public class RaycastInteractor : MonoBehaviour
 
     void ShowId()
     {
-        cIA.StartIdOpenAnim();
+        if (funcionarioAtual != null)
+        {
+            cIA.StartIdOpenAnim(int.Parse(funcionarioAtual.name));
+        }
     }
 
     void ShowTablet()
     {
         cIA.StartTabletOpenAnim();
+    }
+
+    private void Aprovado()
+    {
+        movimentoFunc.MoverManual();
+
+        // Aqui fica a lógica dos pontos e o que mais precisar
+    }
+
+    private void Reprovado()
+    {
+        movimentoFunc.MoverManual();
+
+        // Aqui fica a lógica dos pontos e o que mais precisar
     }
 
     void Enable(RaycastHit hit)
@@ -89,7 +111,7 @@ public class RaycastInteractor : MonoBehaviour
         Interagir.SetActive(true);
     }
 
-    void Aprovar(RaycastHit hit)
+    void EnableA(RaycastHit hit)
     {
         aberto = true;
         outline = hit.collider.gameObject.GetComponent<Outline>();
@@ -97,7 +119,7 @@ public class RaycastInteractor : MonoBehaviour
         Interagir.SetActive(true);
     }
 
-    void Reprovar(RaycastHit hit)
+    void EnableR(RaycastHit hit)
     {
         aberto = true;
         outline = hit.collider.gameObject.GetComponent<Outline>();

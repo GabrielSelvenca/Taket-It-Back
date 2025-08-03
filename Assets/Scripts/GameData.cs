@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -17,7 +18,17 @@ namespace Assets.Scripts
         [Header("Referência para busca de personagens")]
         public GameObject listaPersonagens;
 
+        public GameObject listaConsumiveisModels;
+
         private Dictionary<int, Funcionarios> funcionarioPorId = new();
+
+        [HideInInspector]
+        public class ModeloConsumivelFuncionario
+        {
+            public string nomeConsumivel;
+            public int quantidade;
+            public List<GameObject> modelos = new();
+        }
 
         private void Awake()
         {
@@ -66,16 +77,15 @@ namespace Assets.Scripts
             {
                 consumiveis = new List<Consumivel>
                 {
-                    new Consumivel { id = 1, nome = "Pilha" },
-                    new Consumivel { id = 2, nome = "Cabos" },
-                    new Consumivel { id = 3, nome = "Teclados" },
-                    new Consumivel { id = 4, nome = "Mouse" },
-                    new Consumivel { id = 5, nome = "Caneta" },
-                    new Consumivel { id = 6, nome = "Lápis" },
-                    new Consumivel { id = 7, nome = "Grampeador" },
-                    new Consumivel { id = 8, nome = "Borracha" },
-                    new Consumivel { id = 9, nome = "Álcool Isopropílico" },
-                    new Consumivel { id = 10, nome = "Flanela" },
+                    new Consumivel { id = 1, nome = "Pilha", ehGrande = false },
+                    new Consumivel { id = 2, nome = "Borracha", ehGrande = false },
+                    new Consumivel { id = 3, nome = "Cabos", ehGrande = true },
+                    new Consumivel { id = 4, nome = "Caneta", ehGrande = false },
+                    new Consumivel { id = 5, nome = "Grampeador", ehGrande = true },
+                    new Consumivel { id = 6, nome = "Lápis", ehGrande = false },
+                    new Consumivel { id = 7, nome = "Mouse", ehGrande = true },
+                    new Consumivel { id = 8, nome = "Teclados", ehGrande = true },
+                    new Consumivel { id = 9, nome = "Cálculadora", ehGrande = true }
                 }
             };
         }
@@ -86,7 +96,7 @@ namespace Assets.Scripts
 
             foreach (var func in funcionarios.funcionarios)
             {
-                int qtdTipos = Random.Range(1, 8);
+                int qtdTipos = UnityEngine.Random.Range(1, UnityEngine.Random.Range(5, 8));
                 List<int> usados = new();
 
                 for (int i = 0; i < qtdTipos; i++)
@@ -94,11 +104,11 @@ namespace Assets.Scripts
                     Consumivel item;
                     do
                     {
-                        item = consumiveis.consumiveis[Random.Range(0, consumiveis.consumiveis.Count)];
+                        item = consumiveis.consumiveis[UnityEngine.Random.Range(0, consumiveis.consumiveis.Count)];
                     } while (usados.Contains(item.id));
 
                     usados.Add(item.id);
-                    int qtd = Random.Range(1, 5);
+                    int qtd = UnityEngine.Random.Range(1, 5);
 
                     funcionariosConsumiveis.funcionarioConsumiveis.Add(new FuncionarioConsumivel
                     {
@@ -108,12 +118,6 @@ namespace Assets.Scripts
                     });
                 }
             }
-
-            string path = Path.Combine(Application.persistentDataPath, "funcionariosConsumiveis.json");
-            string jsonFinal = JsonUtility.ToJson(funcionariosConsumiveis, true);
-            File.WriteAllText(path, jsonFinal);
-
-            Debug.Log("Dados carregados ao JSON.");
         }
 
         private void IniciarVinculos()
@@ -201,6 +205,56 @@ namespace Assets.Scripts
             }
 
             return true;
+        }
+
+        public List<ModeloConsumivelFuncionario> BuscarModelosConsumiveisFuncionario(int idFuncionario)
+        {
+            var resultado = new List<ModeloConsumivelFuncionario>();
+
+            // Pega todos os consumíveis desse funcionário
+            var consumiveisFuncionario = GetConsFunc(idFuncionario);
+
+            foreach (var entrega in consumiveisFuncionario)
+            {
+                var cons = consumiveis.consumiveis.Find(c => c.id == entrega.idConsumivel);
+                if (cons == null)
+                {
+                    Debug.LogWarning($"Consumível com ID {entrega.idConsumivel} não encontrado.");
+                    continue;
+                }
+
+                Transform objetoConsumivel = listaConsumiveisModels.transform.Find(cons.nome);
+                if (objetoConsumivel == null)
+                {
+                    Debug.LogWarning($"Objeto '{cons.nome}' não encontrado em '{listaConsumiveisModels.name}'.");
+                    continue;
+                }
+
+                var modelos = new List<GameObject>();
+
+                if (objetoConsumivel.childCount > 0)
+                {
+                    for (int i = 0; i < objetoConsumivel.childCount; i++)
+                    {
+                        modelos.Add(objetoConsumivel.GetChild(i).gameObject);
+                    }
+                    Debug.Log($"Encontrados {modelos.Count} modelos para '{cons.nome}'.");
+                }
+                else
+                {
+                    modelos.Add(objetoConsumivel.gameObject);
+                    Debug.Log($"Usando objeto '{cons.nome}' como modelo único (sem filhos).");
+                }
+
+                resultado.Add(new ModeloConsumivelFuncionario
+                {
+                    nomeConsumivel = cons.nome,
+                    quantidade = entrega.qtd,
+                    modelos = modelos
+                });
+            }
+
+            return resultado;
         }
     }
 }

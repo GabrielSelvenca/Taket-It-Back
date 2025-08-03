@@ -11,6 +11,7 @@ public class MenuManager : MonoBehaviour
     [Header("Menu")]
     public Canvas canvasMenu;
     public Image painelFade;
+    public GameObject telaInicial;
     public float duracaoFade = 1.5f;
 
     [Header("Panel")]
@@ -43,6 +44,7 @@ public class MenuManager : MonoBehaviour
     {
         if (Panel != null)
         {
+            telaInicial.SetActive(false);
             Panel.SetActive (true);
         }
     }
@@ -57,13 +59,13 @@ public class MenuManager : MonoBehaviour
         // pq mesmo que seja nomeJogador = "" ela não é null,
         // pra string sempre use string.IsNullOrEmpty() ou string.IsNullOrWhiteSpace()
 
-        if (string.IsNullOrWhiteSpace(nomeJogador))
+        if (!string.IsNullOrWhiteSpace(nomeJogador))
         {
             gameData.InserirRanking(nomeJogador, 0);
-            Debug.Log($"O nome do jogador é {nomeJogador}");
         }
         else
         {
+            StartCoroutine(PreencherCampo(InputName));
             Debug.LogWarning("Nome do jogador está vazio.");
             return;
         }
@@ -71,6 +73,22 @@ public class MenuManager : MonoBehaviour
         StartCoroutine(FadeOutMenu());
     }
 
+    IEnumerator PreencherCampo(TMP_InputField inputText)
+    {
+        TextMeshProUGUI placeholder = inputText.placeholder as TextMeshProUGUI;
+
+        if (placeholder != null)
+        {
+            var cor1 = placeholder.color;
+            placeholder.color = Color.red;
+            placeholder.text = "Preencha o seu nome";
+            yield return new WaitForSeconds(3);
+            placeholder.color = cor1;
+            placeholder.text = "Insira seu nome aqui";
+        }
+
+        yield return null;
+    }
 
     IEnumerator FadeInMenu()
     {
