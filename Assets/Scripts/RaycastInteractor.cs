@@ -80,6 +80,8 @@ public class RaycastInteractor : MonoBehaviour
     {
         if (funcionarioAtual != null)
         {
+            funcionarioAtual.tag = null;
+
             cIA.StartIdOpenAnim(int.Parse(funcionarioAtual.name));
         }
     }
