@@ -1,4 +1,4 @@
-using Assets.Scripts;
+ï»¿using Assets.Scripts;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +12,11 @@ public class MovimentoFunc : MonoBehaviour
     public Transform pontoFinal;
     public float velocidade = 6f;
 
+    public GameObject finalGameObj;
+    public TextMeshProUGUI pointsObjs;
+    public GameObject player;
+    public Camera MenuCam;
+
     [Header("Sound")]
     public AudioSource blabbingAudioSource;
     public List<AudioClip> blabs = new List<AudioClip>();
@@ -21,8 +26,6 @@ public class MovimentoFunc : MonoBehaviour
     private int indiceAtual = 0;
     private bool movendo = false;
     private Transform retanguloAtual = null;
-
-    public GameData gameData;
 
     private enum EstadoMovimento { Parado, IndoParaFrente, IndoParaFinal }
     private EstadoMovimento estado = EstadoMovimento.Parado;
@@ -47,37 +50,41 @@ public class MovimentoFunc : MonoBehaviour
             movendo = true;
 
             if (fila.Count == 0) return;
-            
+
             retanguloAtual = fila[indiceAtual];
             fila.RemoveAt(indiceAtual);
 
             StartCoroutine(MoverPara(retanguloAtual, pontoFrente.position));
             estado = EstadoMovimento.IndoParaFrente;
-
-            movendo = false;
-
         }
         else if (estado == EstadoMovimento.IndoParaFrente)
-        { 
+        {
             if (retanguloAtual == null) return;
 
             StartCoroutine(MoverPara(retanguloAtual, pontoFinal.position, () =>
             {
                 retanguloAtual.gameObject.SetActive(false);
+
+                if (fila.Count == 0)
+                {
+                    FinalizarFila();
+                    return;
+                }
+
                 AndarFila();
                 if (indiceAtual >= fila.Count)
                     indiceAtual = 0;
 
                 retanguloAtual = null;
                 estado = EstadoMovimento.Parado;
-                
+
                 MoverManual();
             }));
 
             movendo = true;
         }
 
-        if(movendo == false && estado == EstadoMovimento.IndoParaFrente)
+        if (!movendo && estado == EstadoMovimento.IndoParaFrente)
         {
             Blabbs();
         }
@@ -94,10 +101,8 @@ public class MovimentoFunc : MonoBehaviour
 
         obj.position = destino;
         movendo = false;
-        GameData.Instance.BuscarModelosConsumiveisFuncionario(int.Parse(obj.gameObject.name));
 
-        if(aoFinalizar != null)
-            aoFinalizar?.Invoke();
+        aoFinalizar?.Invoke();
     }
 
     private void AndarFila()
@@ -117,46 +122,24 @@ public class MovimentoFunc : MonoBehaviour
         int index = Random.Range(0, blabs.Count);
         AudioClip escolhido = blabs[index];
 
-        Debug.Log($"Tocando: {escolhido.name} - duração: {escolhido.length}");
+        Debug.Log($"Tocando: {escolhido.name} - duraÃ§Ã£o: {escolhido.length}");
 
         blabbingAudioSource.clip = escolhido;
         StartCoroutine(EsperarChegar());
-
     }
 
     private IEnumerator EsperarChegar()
     {
         yield return new WaitForSeconds(2f);
-
         Debug.Log("Chegou");
-        blabbingAudioSource.Play(); 
+        blabbingAudioSource.Play();
     }
 
-    //public void DroparConsumiveis(int idFuncionario)
-    //{
-    //    var modelos = gameData.BuscarModelosConsumiveisFuncionario(idFuncionario);
-    //    if (modelos == null || modelos.Count == 0)
-    //    {
-    //        Debug.LogWarning("Nenhum consumível encontrado para este funcionário.");
-    //        return;
-    //    }
-
-    //    float offset = 0f;
-    //    float distanciaEntreItens = 1.0f;
-
-    //    foreach (var modelo in modelos)
-    //    {
-    //        for (int i = 0; i < modelo.quantidade; i++)
-    //        {
-    //            // Pega um modelo aleatório do grupo
-    //            GameObject prefab = modelo.modelos[UnityEngine.Random.Range(0, modelo.modelos.Count)];
-    //            GameObject instancia = Instantiate(prefab);
-
-    //            instancia.transform.position = gameData.DropItemsArea.position + new Vector3(offset, 0, 0);
-    //            offset += distanciaEntreItens;
-
-    //            instancia.name = $"{modelo.nomeConsumivel}_{i + 1}";
-    //        }
-    //    }
-    //}
+    private void FinalizarFila()
+    {
+        finalGameObj.SetActive(true);
+        pointsObjs.text = PointsManager.Instance.totalPoints.ToString();
+        player.SetActive(false);
+        MenuCam.gameObject.SetActive(true);
+    }
 }

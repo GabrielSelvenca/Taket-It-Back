@@ -5,7 +5,7 @@ public class Consumivel
 {
     public int id;
     public string nome;
-    public bool ehGrande;
+    public float offSet;
     public int qtd;
 
     [System.NonSerialized]

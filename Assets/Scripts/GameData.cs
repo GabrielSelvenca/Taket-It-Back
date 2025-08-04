@@ -17,20 +17,9 @@ namespace Assets.Scripts
 
         [Header("Referência para busca de personagens")]
         public GameObject listaPersonagens;
-
         public GameObject listaConsumiveisModels;
 
-        public Transform DropItemsArea;
-
         private Dictionary<int, Funcionarios> funcionarioPorId = new();
-
-        [HideInInspector]
-        public class ModeloConsumivelFuncionario
-        {
-            public string nomeConsumivel;
-            public int quantidade;
-            public List<GameObject> modelos = new();
-        }
 
         private void Awake()
         {
@@ -44,7 +33,6 @@ namespace Assets.Scripts
 
         private void CarregarDados()
         {
-            // Ranking
             string caminhoR = Path.Combine(Application.persistentDataPath, "ranking.json");
             if (File.Exists(caminhoR))
             {
@@ -58,7 +46,6 @@ namespace Assets.Scripts
                 Debug.Log("Arquivo de ranking não encontrado. Criando novo.");
             }
 
-            // Funcionários (manual)
             funcionarios = new ListaFuncionarios
             {
                 funcionarios = new List<Funcionarios>
@@ -66,7 +53,6 @@ namespace Assets.Scripts
                     new Funcionarios { id = 14254, nome = "Carla Menezes", funcao = "TI" },
                     new Funcionarios { id = 9572, nome = "Ricardo Torres", funcao = "TI" },
                     new Funcionarios { id = 31774, nome = "Duda Vasconcelos", funcao = "Áudio" },
-                    new Funcionarios { id = 20892, nome = "Jeferson Santana", funcao = "Áudio" },
                     new Funcionarios { id = 18995, nome = "Nara Kim", funcao = "Dev" },
                     new Funcionarios { id = 15537, nome = "Bruno Alves", funcao = "Dev" },
                     new Funcionarios { id = 44026, nome = "Thiago Duarte", funcao = "Marketing" },
@@ -74,19 +60,16 @@ namespace Assets.Scripts
                 }
             };
 
-            // Consumíveis (manual)
             consumiveis = new ListaConsumiveis
             {
                 consumiveis = new List<Consumivel>
                 {
-                    new Consumivel { id = 1, nome = "Pilha", ehGrande = false },
-                    new Consumivel { id = 2, nome = "Borracha", ehGrande = false },
-                    new Consumivel { id = 3, nome = "Caneta", ehGrande = false },
-                    new Consumivel { id = 4, nome = "Grampeador", ehGrande = true },
-                    new Consumivel { id = 5, nome = "Lápis", ehGrande = false },
-                    new Consumivel { id = 6, nome = "Mouse", ehGrande = true },
-                    new Consumivel { id = 7, nome = "Teclados", ehGrande = true },
-                    new Consumivel { id = 8, nome = "Cálculadora", ehGrande = true }
+                    new Consumivel { id = 1, nome = "Pilha", offSet = -1f },
+                    new Consumivel { id = 2, nome = "Caneta", offSet = -1f },
+                    new Consumivel { id = 3, nome = "Lápis", offSet = -1f },
+                    new Consumivel { id = 4, nome = "Mouse", offSet = -3f },
+                    new Consumivel { id = 5, nome = "Teclado", offSet = -5f },
+                    new Consumivel { id = 6, nome = "Cálculadora", offSet = -3.5f }
                 }
             };
         }
@@ -97,7 +80,7 @@ namespace Assets.Scripts
 
             foreach (var func in funcionarios.funcionarios)
             {
-                int qtdTipos = UnityEngine.Random.Range(1, UnityEngine.Random.Range(5, 8));
+                int qtdTipos = UnityEngine.Random.Range(3, UnityEngine.Random.Range(5, 8));
                 List<int> usados = new();
 
                 for (int i = 0; i < qtdTipos; i++)
@@ -109,7 +92,7 @@ namespace Assets.Scripts
                     } while (usados.Contains(item.id));
 
                     usados.Add(item.id);
-                    int qtd = UnityEngine.Random.Range(1, 5);
+                    int qtd = UnityEngine.Random.Range(2, 5);
 
                     funcionariosConsumiveis.funcionarioConsumiveis.Add(new FuncionarioConsumivel
                     {
@@ -135,20 +118,133 @@ namespace Assets.Scripts
                     func.personagem3D = child.gameObject;
                     Debug.Log($"Funcionario {func.nome} vinculado ao objeto {child.name}");
                 }
-                else
-                {
-                    Debug.LogWarning($"Objeto com nome {func.id} não encontrado");
-                }
             }
         }
 
         public Funcionarios GetFuncionario(int id) => funcionarioPorId.TryGetValue(id, out var func) ? func : null;
 
-        public GameObject GetPersonagem(int id) => GetFuncionario(id)?.personagem3D;
-
         public List<FuncionarioConsumivel> GetConsFunc(int idFunc) => funcionariosConsumiveis.funcionarioConsumiveis.FindAll(f => f.idFuncionario == idFunc);
 
-        public int GetPontosDoJogador(string nome) => ranking.ranking.Find(p => p.nome == nome)?.pontos ?? 0;
+        public List<Consumivel> BuscarModelosConsumiveisFuncionario(int idFuncionario)
+        {
+            var resultado = new List<Consumivel>();
+            var consumiveisFuncionario = GetConsFunc(idFuncionario);
+
+            foreach (var entrega in consumiveisFuncionario)
+            {
+                var cons = consumiveis.consumiveis.Find(c => c.id == entrega.idConsumivel);
+                if (cons == null) continue;
+
+                resultado.Add(new Consumivel
+                {
+                    id = cons.id,
+                    nome = cons.nome,
+                    offSet = cons.offSet,
+                    qtd = entrega.qtd
+                });
+            }
+
+            var funcionario = GetFuncionario(idFuncionario);
+            if (funcionario != null)
+            {
+                funcionario.consumiveisPegos = resultado;
+            }
+
+            return resultado;
+        }
+
+        public GameObject BuscarModeloConsumivelPorNome(string nomeConsumivel)
+        {
+            Transform objetoConsumivel = listaConsumiveisModels.transform.Find($"{nomeConsumivel}_atual");
+            if (objetoConsumivel == null) return null;
+
+            return objetoConsumivel.childCount > 0 ?
+                objetoConsumivel.GetChild(0).gameObject :
+                objetoConsumivel.gameObject;
+        }
+
+        public void MostrarConsumiveisNaMesa(int idFuncionario)
+        {
+            var funcionario = GetFuncionario(idFuncionario);
+            if (funcionario == null || funcionario.consumiveisPegos == null) return;
+
+            funcionario.devolucaoCorreta = UnityEngine.Random.value > 0.49f;
+
+            foreach (var cons in funcionario.consumiveisPegos)
+            {
+                int qtdParaMostrar = cons.qtd;
+
+                if (!funcionario.devolucaoCorreta)
+                {
+                    qtdParaMostrar = Mathf.Max(0, cons.qtd - 1);
+                }
+
+                MostrarConsumivelNaMesa(cons, qtdParaMostrar);
+            }
+        }
+
+
+        private void MostrarConsumivelNaMesa(Consumivel cons, int quantidade)
+        {
+            Transform objetoBase = listaConsumiveisModels.transform.Find($"{cons.nome}_atual");
+            if (objetoBase == null)
+            {
+                Debug.LogWarning($"Modelo base '{cons.nome}_atual' não encontrado.");
+                return;
+            }
+
+            Vector3 posBase = objetoBase.localPosition;
+
+            for (int i = 0; i < quantidade; i++)
+            {
+                GameObject copia = Instantiate(objetoBase.gameObject, listaConsumiveisModels.transform);
+                copia.SetActive(true);
+
+                float deslocamentoTotal = cons.offSet * i;
+                Vector3 novaPos = new Vector3(posBase.x + deslocamentoTotal, posBase.y, posBase.z);
+                copia.transform.localPosition = novaPos;
+
+                copia.name = (i < quantidade - 1) ? cons.nome : $"{cons.nome}_atual";
+            }
+        }
+
+        public void LimparMesa()
+        {
+            foreach (Transform item in listaConsumiveisModels.transform)
+            {
+                if (item.gameObject.activeSelf)
+                {
+                    Destroy(item.gameObject);
+                }
+            }
+        }
+
+        public void AvaliarAcao(bool aprovou, int idFuncionario)
+        {
+            var funcionario = GetFuncionario(idFuncionario);
+            if (funcionario == null)
+            {
+                Debug.LogWarning("Funcionário não encontrado.");
+                return;
+            }
+
+            bool devolucaoEstaCorreta = funcionario.devolucaoCorreta;
+
+            bool acaoCorreta = (aprovou && devolucaoEstaCorreta) || (!aprovou && !devolucaoEstaCorreta);
+
+            if (acaoCorreta)
+            {
+                PointsManager.Instance.SomarPontos();
+                Debug.Log($"✅ Jogador acertou. (Total: {PointsManager.Instance.totalPoints})");
+            }
+            else
+            {
+                PointsManager.Instance.DiminuirPontos();
+                Debug.Log($"❌ Jogador errou. (Total: {PointsManager.Instance.totalPoints})");
+            }
+
+            LimparMesa();
+        }
 
         public void InserirRanking(string nomeJogador, int pontosGanhos)
         {
@@ -168,94 +264,6 @@ namespace Assets.Scripts
             string caminho = Path.Combine(Application.persistentDataPath, "ranking.json");
             File.WriteAllText(caminho, JsonUtility.ToJson(ranking, true));
             Debug.Log($"Ranking salvo em {caminho}");
-        }
-
-        private Dictionary<string, List<int>> restricoesPorFuncao = new()
-        {
-            { "Limpeza", new List<int> { 9, 10 } },
-            { "TI", new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 } },
-            { "Dev", new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 } },
-            { "Marketing", new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 } },
-            { "Áudio", new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 } }
-        };
-
-        public bool VerificarEntregasValidas(int idFuncionario)
-        {
-            var funcionario = GetFuncionario(idFuncionario);
-            if (funcionario == null)
-            {
-                Debug.LogWarning("Funcionário não encontrado.");
-                return false;
-            }
-
-            if (!restricoesPorFuncao.TryGetValue(funcionario.funcao, out var permitidos))
-            {
-                Debug.LogWarning($"Função {funcionario.funcao} não tem restrições definidas.");
-                return false;
-            }
-
-            var entregas = GetConsFunc(idFuncionario);
-            foreach (var entrega in entregas)
-            {
-                if (!permitidos.Contains(entrega.idConsumivel))
-                {
-                    var nomeItem = consumiveis.consumiveis.Find(c => c.id == entrega.idConsumivel)?.nome ?? "Desconhecido";
-                    Debug.LogWarning($"Item inválido: {nomeItem} ({entrega.idConsumivel}) entregue por {funcionario.nome} ({funcionario.funcao})");
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        public List<ModeloConsumivelFuncionario> BuscarModelosConsumiveisFuncionario(int idFuncionario)
-        {
-            var resultado = new List<ModeloConsumivelFuncionario>();
-
-            // Pega todos os consumíveis desse funcionário
-            var consumiveisFuncionario = GetConsFunc(idFuncionario);
-
-            foreach (var entrega in consumiveisFuncionario)
-            {
-                var cons = consumiveis.consumiveis.Find(c => c.id == entrega.idConsumivel);
-                if (cons == null)
-                {
-                    Debug.LogWarning($"Consumível com ID {entrega.idConsumivel} não encontrado.");
-                    continue;
-                }
-
-                Transform objetoConsumivel = listaConsumiveisModels.transform.Find(cons.nome);
-                if (objetoConsumivel == null)
-                {
-                    Debug.LogWarning($"Objeto '{cons.nome}' não encontrado em '{listaConsumiveisModels.name}'.");
-                    continue;
-                }
-
-                var modelos = new List<GameObject>();
-
-                if (objetoConsumivel.childCount > 0)
-                {
-                    for (int i = 0; i < objetoConsumivel.childCount; i++)
-                    {
-                        modelos.Add(objetoConsumivel.GetChild(i).gameObject);
-                    }
-                    Debug.Log($"Encontrados {modelos.Count} modelos para '{cons.nome}'.");
-                }
-                else
-                {
-                    modelos.Add(objetoConsumivel.gameObject);
-                    Debug.Log($"Usando objeto '{cons.nome}' como modelo único (sem filhos).");
-                }
-
-                resultado.Add(new ModeloConsumivelFuncionario
-                {
-                    nomeConsumivel = cons.nome,
-                    quantidade = entrega.qtd,
-                    modelos = modelos
-                });
-            }
-
-            return resultado;
         }
     }
 }

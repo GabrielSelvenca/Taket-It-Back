@@ -8,6 +8,7 @@ TagManager:
   - Tablet
   - Aprovar
   - Reprovar
+  - Item
   layers:
   - Default
   - TransparentFX

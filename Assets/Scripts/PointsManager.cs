@@ -2,11 +2,16 @@ using UnityEngine;
 
 public class PointsManager : MonoBehaviour
 {
+    public static PointsManager Instance { get; private set; }
+
     public int totalPoints = 0;
 
-    public void CriarUsuario()
+    private void Awake()
     {
-        
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
     }
 
     public void SomarPontos()

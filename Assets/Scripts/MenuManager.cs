@@ -29,7 +29,7 @@ public class MenuManager : MonoBehaviour
     public TMP_InputField InputName;
     public GameData gameData;
 
-    [Header("Player")] //Perdão pela gambiarra ;-; ---- love u <3
+    [Header("Player")]
     public GameObject Player;
 
     [Header("Configs")]
@@ -166,6 +166,8 @@ public class MenuManager : MonoBehaviour
 
             if (Slides != null)
             {
+                Slides.Clear();
+
                 for (int i = 0; i < paiSlides.childCount; i++)
                     Slides.Add(paiSlides.GetChild(i));
 

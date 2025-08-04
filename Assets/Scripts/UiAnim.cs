@@ -8,7 +8,7 @@ public class UiAnim : MonoBehaviour
     Coroutine anim;
     Coroutine anim2;
     int uiForX = 0;
-    int rangeId = 80;
+    int rangeId = 100;
     int tabletForY = 0;
     int rangeTablet = 146;
     public RectTransform uiRectTransform;

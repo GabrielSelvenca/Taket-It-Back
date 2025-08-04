@@ -10,19 +10,27 @@ public class TabletManager : MonoBehaviour
     public TMP_InputField inputId;
     public Button btnBuscar;
     public RectTransform errorPopUp;
-    private List<FuncionarioConsumivel> listaConsumiveisFuncionario;
-    private Funcionarios funcionario;
+    public TextMeshProUGUI textoPegos;
+    public GameObject pesquisarObj;
+    public GameObject listaObj;
 
     public void Buscar()
     {
         if (int.TryParse(inputId.text.Trim(), out int id))
         {
-            funcionario = GameData.Instance.GetFuncionario(id);
-            listaConsumiveisFuncionario = GameData.Instance.GetConsFunc(id);
+            var funcionario = GameData.Instance.GetFuncionario(id);
+            var consumiveis = GameData.Instance.BuscarModelosConsumiveisFuncionario(id);
 
-            if (funcionario != null && listaConsumiveisFuncionario != null && listaConsumiveisFuncionario.Count > 0)
+            if (funcionario != null && consumiveis != null && consumiveis.Count > 0)
             {
-                Debug.Log($"Funcionario {funcionario.nome} encontrado com {listaConsumiveisFuncionario.Count} consumiveis.");
+                pesquisarObj.SetActive(false);
+                listaObj.SetActive(true);
+
+                textoPegos.text = $"Pegou:\n";
+                foreach (var cons in consumiveis)
+                {
+                    textoPegos.text += $"{cons.nome} x{cons.qtd}\n";
+                }
             }
             else
             {
@@ -37,10 +45,17 @@ public class TabletManager : MonoBehaviour
         }
     }
 
+    public void Voltar()
+    {
+        pesquisarObj.SetActive(true);
+        listaObj.SetActive(false);
+        textoPegos.text = string.Empty;
+    }
+
     public void ErrorPopUp()
     {
         errorPopUp.gameObject.SetActive(true);
-        btnBuscar.gameObject.SetActive(false);
+        pesquisarObj.SetActive(false);
         StartCoroutine(ErrorPopOut());
     }
 
@@ -48,5 +63,6 @@ public class TabletManager : MonoBehaviour
     {
         yield return new WaitForSeconds(5);
         errorPopUp.gameObject.SetActive(false);
+        pesquisarObj.SetActive(true);
     }
 }

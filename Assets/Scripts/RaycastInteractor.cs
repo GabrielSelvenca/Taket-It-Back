@@ -1,34 +1,25 @@
+using Assets.Scripts;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class RaycastInteractor : MonoBehaviour
 {
-
     public Camera playerCamera;
-
     public GameObject Interagir;
-
     public Action action;
-
     public UiAnim cIA;
-
     public int actualEmplo;
-
     public MovimentoFunc movimentoFunc;
 
     Outline outline;
-
     float range = 100f;
-
     bool aberto;
 
     private GameObject funcionarioAtual = null;
-
     private GameObject Tablet;
 
     public AudioSource audioSource;
-
     public List<AudioClip> buttonSounds = new();
 
     private void Start()
@@ -76,12 +67,16 @@ public class RaycastInteractor : MonoBehaviour
                 EnableR(hit);
                 action = Reprovado;
             }
+            else if (hit.collider.CompareTag("Item"))
+            {
+                Enable(hit);
+                action = null;
+            }
         }
         else if (aberto)
         {
             Reseting();
         }
-
     }
 
     void ShowId()
@@ -90,7 +85,16 @@ public class RaycastInteractor : MonoBehaviour
         {
             funcionarioAtual.GetComponent<BoxCollider>().enabled = false;
 
-            cIA.StartIdOpenAnim(int.Parse(funcionarioAtual.name));
+            if (int.TryParse(funcionarioAtual.name.Trim(), out int id))
+            {
+                GameData.Instance.BuscarModelosConsumiveisFuncionario(id);
+                GameData.Instance.MostrarConsumiveisNaMesa(id);
+                cIA.StartIdOpenAnim(id);
+            }
+            else
+            {
+                Debug.LogError("ID do funcionário inválido.");
+            }
         }
     }
 
@@ -99,7 +103,6 @@ public class RaycastInteractor : MonoBehaviour
         if (funcionarioAtual != null)
         {
             cIA.StartIdCloseAnim();
-
             funcionarioAtual.GetComponent<BoxCollider>().enabled = true;
         }
     }
@@ -110,7 +113,6 @@ public class RaycastInteractor : MonoBehaviour
         {
             cIA.StartTabletOpenAnim();
             Tablet.GetComponent<BoxCollider>().enabled = false;
-
         }
     }
 
@@ -120,7 +122,6 @@ public class RaycastInteractor : MonoBehaviour
         {
             cIA.StartTabletCloseAnim();
             Tablet.GetComponent<BoxCollider>().enabled = true;
-
         }
     }
 
@@ -130,7 +131,7 @@ public class RaycastInteractor : MonoBehaviour
         audioSource.Play();
         Debug.Log("Aprovado");
 
-        // Aqui fica a lógica dos pontos e o que mais precisar
+        GameData.Instance.AvaliarAcao(true, int.Parse(funcionarioAtual.name.Trim()));
     }
 
     private void Reprovado()
@@ -139,7 +140,7 @@ public class RaycastInteractor : MonoBehaviour
         audioSource.Play();
         Debug.Log("Reprovado");
 
-        // Aqui fica a lógica dos pontos e o que mais precisar
+        GameData.Instance.AvaliarAcao(false, int.Parse(funcionarioAtual.name.Trim()));
     }
 
     void Enable(RaycastHit hit)
@@ -169,7 +170,10 @@ public class RaycastInteractor : MonoBehaviour
     void Reseting()
     {
         aberto = false;
-        outline.OutlineColor = new Color(0f, 1f, 0f, 0f);
+        if (outline != null)
+        {
+            outline.OutlineColor = new Color(0f, 1f, 0f, 0f);
+        }
         Interagir.SetActive(false);
         action = null;
         outline = null;

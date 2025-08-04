@@ -1,16 +1,11 @@
+using Assets.Scripts;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class DropItems : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    public static DropItems Instance { get; private set; }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+
+
 }
